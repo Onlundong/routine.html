@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>고객 분류 시트 — D-003 닫기</title>
+<style>
+  :root {
+    --bg:#f6f7f9; --surface:#fff; --surface-2:#f0f2f5; --border:#e2e5ea; --border-2:#cfd4dc;
+    --text:#1a1d21; --muted:#5c6470; --faint:#8a92a0;
+    --accent:#2f6df6; --accent-bg:#e8f0ff;
+    --a:#e8590c; --a-bg:#fff2e8;
+    --b:#1f9d55; --b-bg:#e8f6ee;
+    --c:#7048e8; --c-bg:#f0ebff;
+    --x:#8a92a0; --x-bg:#eef0f3;
+    --warn:#b4541f; --warn-bg:#fdf0e7;
+    --shadow:0 1px 2px rgba(16,24,40,.06), 0 1px 3px rgba(16,24,40,.1);
+    --radius:12px;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+    --bg:#0e1116; --surface:#171b21; --surface-2:#1e232b; --border:#2a303a; --border-2:#3a4150;
+    --text:#e6e9ee; --muted:#9aa4b2; --faint:#6b7482;
+    --accent:#5b8dff; --accent-bg:#13213f;
+    --a:#ff8c4b; --a-bg:#2a1a10; --b:#4cc47f; --b-bg:#12241a; --c:#a98bff; --c-bg:#1d1734;
+    --x:#6b7482; --x-bg:#20242b; --warn:#e8955f; --warn-bg:#2a1a10; --shadow:none;
+  }}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);line-height:1.6;
+    font-family:"Pretendard",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Segoe UI",Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto;padding:28px 16px 80px}
+  h1{font-size:clamp(22px,3.4vw,30px);letter-spacing:-.02em;margin:14px 0 8px;line-height:1.2}
+  h2{font-size:17px;letter-spacing:-.015em;margin:0 0 12px}
+  p{margin:0 0 10px}
+  .eyebrow{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;
+    letter-spacing:.05em;text-transform:uppercase;color:var(--accent);background:var(--accent-bg);
+    padding:5px 12px;border-radius:999px}
+  .sub{color:var(--muted);font-size:15px;max-width:72ch}
+  .panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:20px;margin-top:18px}
+  .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:16px}
+  button,.btn{font:inherit;font-size:14px;font-weight:650;padding:9px 15px;border-radius:9px;
+    border:1px solid var(--border-2);background:var(--surface);color:var(--text);cursor:pointer}
+  button:hover{background:var(--surface-2)}
+  button.primary{background:var(--accent);color:#fff;border-color:transparent}
+  button.primary:hover{filter:brightness(1.08)}
+  button.ghost{background:transparent}
+  .spacer{flex:1}
+
+  /* table */
+  .tablewrap{overflow-x:auto;margin-top:4px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface)}
+  table{border-collapse:collapse;width:100%;min-width:900px;font-size:14px}
+  th{position:sticky;top:0;z-index:2;background:var(--surface-2);text-align:left;
+    font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--faint);
+    padding:10px 10px;border-bottom:1px solid var(--border);white-space:nowrap}
+  td{padding:5px 7px;border-bottom:1px solid var(--border);vertical-align:middle}
+  tr:last-child td{border-bottom:none}
+  td input,td select{font:inherit;font-size:14px;color:var(--text);background:transparent;
+    border:1px solid transparent;border-radius:7px;padding:7px 8px;width:100%}
+  td input:hover,td select:hover{border-color:var(--border)}
+  td input:focus,td select:focus{outline:none;border-color:var(--accent);background:var(--bg)}
+  td.seg{white-space:nowrap}
+  .tag{display:inline-block;font-size:11.5px;font-weight:800;padding:3px 9px;border-radius:999px;letter-spacing:.02em}
+  .tag.A{color:var(--a);background:var(--a-bg)} .tag.B{color:var(--b);background:var(--b-bg)}
+  .tag.C{color:var(--c);background:var(--c-bg)} .tag.X{color:var(--x);background:var(--x-bg)}
+  .del{color:var(--faint);border:none;background:none;cursor:pointer;font-size:16px;padding:4px 8px;line-height:1}
+  .del:hover{color:var(--warn);background:none}
+  .idx{color:var(--faint);font-family:var(--mono);font-size:12px;text-align:right;width:34px}
+
+  /* tally */
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:4px}
+  .card{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:var(--surface)}
+  .card.A{border-left:4px solid var(--a)} .card.B{border-left:4px solid var(--b)}
+  .card.C{border-left:4px solid var(--c)} .card.X{border-left:4px solid var(--x)}
+  .card .nm{font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:2px}
+  .card .big{font-size:30px;font-weight:800;letter-spacing:-.03em;line-height:1.1}
+  .card .dt{font-size:12.5px;color:var(--faint);margin-top:6px;line-height:1.5}
+  .card .dt b{color:var(--text);font-weight:700}
+
+  .verdict{margin-top:16px;border-radius:10px;padding:16px 18px;font-size:15px;
+    background:var(--accent-bg);border:1px solid color-mix(in srgb,var(--accent) 28%, transparent)}
+  .verdict.thin{background:var(--warn-bg);border-color:color-mix(in srgb,var(--warn) 30%, transparent)}
+  .verdict h3{margin:0 0 7px;font-size:16px;letter-spacing:-.01em}
+  .verdict .why{font-size:13.5px;color:var(--muted);margin-top:8px}
+
+  ol.calls{margin:4px 0 0;padding-left:0;list-style:none;counter-reset:c}
+  ol.calls li{counter-increment:c;display:grid;grid-template-columns:26px 1fr auto;gap:10px;
+    align-items:center;padding:9px 2px;border-top:1px dashed var(--border);font-size:14.5px}
+  ol.calls li:first-child{border-top:none}
+  ol.calls li::before{content:counter(c);font-family:var(--mono);font-size:12px;color:var(--faint)}
+  ol.calls li .memo{color:var(--muted);font-size:13px}
+  ol.calls li .tag{white-space:nowrap}
+  .empty{color:var(--faint);font-size:14px;padding:10px 2px}
+
+  .note{font-size:13px;color:var(--faint);line-height:1.65;margin-top:12px}
+  .note b{color:var(--muted)}
+  details.guide{margin-top:18px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface)}
+  details.guide summary{cursor:pointer;list-style:none;padding:14px 18px;font-weight:650;font-size:15px}
+  details.guide summary::-webkit-details-marker{display:none}
+  details.guide summary::after{content:"+";float:right;color:var(--faint);font-weight:400}
+  details.guide[open] summary::after{content:"−"}
+  details.guide .body{padding:0 18px 18px;font-size:14px;color:var(--muted)}
+  details.guide table{min-width:0;font-size:13.5px}
+  details.guide td,details.guide th{padding:7px 9px}
+  @media print{.toolbar,.del,details.guide,#addRow{display:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <span class="eyebrow">D-003 · 서브 세그먼트 택 1</span>
+  <h1>고객 분류 시트</h1>
+  <p class="sub">
+    기억나는 대로 적으세요. <b>모르면 '모름'</b>을 고르면 됩니다. 완벽할 필요 없습니다 —
+    목표는 정확한 기록이 아니라 <b>어느 세그먼트에 돈이 몰려 있는지</b> 한눈에 보는 것입니다.
+    세그먼트는 직접 고르지 않습니다. 직업과 활동을 적으면 <b>자동으로 판정</b>됩니다.
+  </p>
+
+  <div class="toolbar">
+    <button class="primary" id="addRow">+ 행 추가</button>
+    <button id="add5">+ 5행</button>
+    <span class="spacer"></span>
+    <button class="ghost" id="exp">CSV 내보내기</button>
+    <button class="ghost" id="impBtn">CSV 가져오기</button>
+    <input type="file" id="imp" accept=".csv,text/csv" hidden>
+    <button class="ghost" id="clear">전체 지우기</button>
+  </div>
+
+  <div class="tablewrap">
+    <table>
+      <thead><tr>
+        <th class="idx">#</th>
+        <th style="min-width:130px">이름 / 식별 메모</th>
+        <th style="min-width:92px">연령대</th>
+        <th style="min-width:150px">직업 유형</th>
+        <th style="min-width:160px">몸 때문에 줄인 활동</th>
+        <th style="min-width:96px">결제 이력</th>
+        <th style="min-width:100px">연락 가능</th>
+        <th style="min-width:180px">그때 문제 (한 줄)</th>
+        <th style="min-width:72px">세그먼트</th>
+        <th style="width:38px"></th>
+      </tr></thead>
+      <tbody id="tb"></tbody>
+    </table>
+  </div>
+  <p class="note">
+    입력은 이 브라우저에 자동 저장됩니다. 다만 시크릿 창·캐시 삭제·다른 기기에서는 사라지니,
+    <b>다 채우면 CSV로 한 번 내보내 두세요.</b>
+  </p>
+
+  <div class="panel">
+    <h2>집계</h2>
+    <div class="cards" id="cards"></div>
+    <div id="verdict"></div>
+  </div>
+
+  <div class="panel">
+    <h2>이번 주 전화할 사람 — 연락 가능 + 결제 이력 순</h2>
+    <p class="note" style="margin-top:0">
+      분류가 목적이 아닙니다. <b>이 명단이 목적입니다.</b> 세그먼트가 안 정해져도 이 사람들에겐 오늘 전화할 수 있습니다.
+    </p>
+    <ol class="calls" id="calls"></ol>
+  </div>
+
+  <details class="guide">
+    <summary>세그먼트 판정 기준 · 어떻게 읽어야 하나</summary>
+    <div class="body">
+      <p><b>자동 판정 규칙</b> (위에서부터 먼저 맞는 것으로 정해집니다)</p>
+      <table>
+        <tr><th>판정</th><th>조건</th></tr>
+        <tr><td><span class="tag A">A</span></td><td>줄인 활동 = <b>골프</b></td></tr>
+        <tr><td><span class="tag C">C</span></td><td>줄인 활동 = <b>등산</b></td></tr>
+        <tr><td><span class="tag B">B</span></td><td>직업 = <b>좌식 사무·개발</b> &nbsp;(활동이 러닝·일상·없음·모름일 때)</td></tr>
+        <tr><td><span class="tag X">기타</span></td><td>위 어디에도 안 들어감 — 판단 보류</td></tr>
+      </table>
+      <p style="margin-top:14px"><b>읽는 법 — 인원수가 아니라 결제입니다.</b></p>
+      <p>
+        사무직 10명이 전부 단회 결제였고 골퍼 4명이 전부 다회 결제였다면,
+        <b>골프가 이깁니다.</b> 인원수는 '과거에 누가 왔는가'를 말하고,
+        다회 결제는 '누가 돈을 내는가'를 말합니다. 첫 30일에 필요한 건 후자입니다.
+      </p>
+      <p style="margin-top:12px"><b>데이터가 얇을 때</b> — 총 5명 미만이면 판정을 믿지 마세요.
+        그 경우엔 세그먼트를 고르는 대신 <b>전원에게 전화해서 직접 물어보는 것</b>이 정답입니다.
+        "요즘 몸 때문에 못 하시는 거 있으세요?" 한 문장이면 분류됩니다.</p>
+      <p style="margin-top:12px"><b>C(등산) 주의</b> — 전략서상 C는 충성도·추천율은 높지만
+        디지털 접점이 약합니다. C가 1위로 나오면 콘텐츠 채널을 네이버 쪽으로 더 기울여야 합니다.</p>
+    </div>
+  </details>
+</div>
+
+<script>
+const AGE  = ["모름","30대 이하","40대","50대","60대 이상"];
+const JOB  = ["모름","좌식 사무·개발","서서 일함","운전 많음","신체 노동","기타"];
+const ACT  = ["모름","골프","등산","러닝·운동","일상·육아","없음"];
+const PAY  = ["모름","단회","2~3회","4회 이상"];
+const CALL = ["모름","가능","어려움"];
+const COLS = ["name","age","job","act","pay","call","memo"];
+const KEY  = "oneul.segment.v1";
+
+let rows = [];
+
+/* ── 세그먼트 자동 판정 ───────────────────────────── */
+function seg(r){
+  if (r.act === "골프") return "A";
+  if (r.act === "등산") return "C";
+  if (r.job === "좌식 사무·개발") return "B";
+  return "X";
+}
+const SEGNAME = { A:"A · 골프", B:"B · 좌식 사무·개발", C:"C · 등산", X:"기타 · 판단 보류" };
+function isBlank(r){ return !r.name && r.job === "모름" && r.act === "모름"; }
+const PAYRANK = { "4회 이상":3, "2~3회":2, "단회":1, "모름":0 };
+
+/* ── 저장 ─────────────────────────────────────────── */
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(rows)); }catch(e){} }
+function load(){
+  try{ const v = localStorage.getItem(KEY); if(v) rows = JSON.parse(v) || []; }catch(e){ rows = []; }
+  if(!Array.isArray(rows)) rows = [];
+}
+
+/* ── 렌더 ─────────────────────────────────────────── */
+function sel(opts, val, oninput){
+  const s = document.createElement("select");
+  opts.forEach(o => { const op = document.createElement("option"); op.value = o; op.textContent = o; s.appendChild(op); });
+  s.value = opts.includes(val) ? val : opts[0];
+  s.addEventListener("change", e => oninput(e.target.value));
+  return s;
+}
+function txt(val, ph, oninput){
+  const i = document.createElement("input");
+  i.type = "text"; i.value = val || ""; i.placeholder = ph || "";
+  i.addEventListener("input", e => oninput(e.target.value));
+  return i;
+}
+
+function render(){
+  const tb = document.getElementById("tb");
+  tb.textContent = "";
+  rows.forEach((r, i) => {
+    const tr = document.createElement("tr");
+    const add = (el, cls) => { const td = document.createElement("td"); if(cls) td.className = cls; td.appendChild(el); tr.appendChild(td); };
+
+    const n = document.createElement("span"); n.textContent = i + 1;
+    add(n, "idx");
+    add(txt(r.name, "예: 김○○ / 수요일 오전 분", v => { r.name = v; save(); callList(); }));
+    add(sel(AGE,  r.age,  v => { r.age  = v; upd(); }));
+    add(sel(JOB,  r.job,  v => { r.job  = v; upd(); }));
+    add(sel(ACT,  r.act,  v => { r.act  = v; upd(); }));
+    add(sel(PAY,  r.pay,  v => { r.pay  = v; upd(); }));
+    add(sel(CALL, r.call, v => { r.call = v; upd(); }));
+    add(txt(r.memo, "예: 하산할 때 무릎", v => { r.memo = v; save(); callList(); }));
+
+    const tag = document.createElement("span");
+    if(isBlank(r)){ tag.style.color = "var(--faint)"; tag.textContent = "—"; }
+    else { const s = seg(r); tag.className = "tag " + s; tag.textContent = s === "X" ? "기타" : s; }
+    add(tag, "seg");
+
+    const del = document.createElement("button");
+    del.className = "del"; del.title = "삭제"; del.textContent = "×";
+    del.addEventListener("click", () => { rows.splice(i,1); upd(); });
+    add(del);
+
+    tb.appendChild(tr);
+  });
+  if(!rows.length){
+    const tr = document.createElement("tr");
+    const td = document.createElement("td");
+    td.colSpan = 10; td.className = "empty";
+    td.textContent = "행을 추가해서 시작하세요. 기억나는 사람부터, 순서 상관없이.";
+    tr.appendChild(td); tb.appendChild(tr);
+  }
+}
+
+function tally(){
+  const t = { A:mk(), B:mk(), C:mk(), X:mk() };
+  function mk(){ return { n:0, repeat:0, reach:0 }; }
+  rows.forEach(r => {
+    if(isBlank(r)) return;   // 빈 행 제외
+    const s = t[seg(r)];
+    s.n++;
+    if(r.pay === "2~3회" || r.pay === "4회 이상") s.repeat++;
+    if(r.call === "가능") s.reach++;
+  });
+
+  const box = document.getElementById("cards");
+  box.textContent = "";
+  ["A","B","C","X"].forEach(k => {
+    const d = t[k];
+    const c = document.createElement("div"); c.className = "card " + k;
+    const nm = document.createElement("div"); nm.className = "nm"; nm.textContent = SEGNAME[k];
+    const big = document.createElement("div"); big.className = "big"; big.textContent = d.n + "명";
+    const dt = document.createElement("div"); dt.className = "dt";
+    dt.innerHTML = "다회 결제 <b>" + d.repeat + "</b>명 · 연락 가능 <b>" + d.reach + "</b>명";
+    c.append(nm, big, dt); box.appendChild(c);
+  });
+
+  verdict(t);
+}
+
+function verdict(t){
+  const el = document.getElementById("verdict");
+  const total = t.A.n + t.B.n + t.C.n + t.X.n;
+  el.textContent = "";
+  if(total === 0) return;
+
+  const div = document.createElement("div");
+  const h = document.createElement("h3");
+  const p = document.createElement("div");
+  const why = document.createElement("div"); why.className = "why";
+
+  if(total < 5){
+    div.className = "verdict thin";
+    h.textContent = "아직 판정하지 마세요 — 총 " + total + "명";
+    p.textContent = "5명 미만에서 나온 1위는 우연입니다. 지금 할 일은 세그먼트를 고르는 게 아니라, 이 "
+      + total + "명 전원에게 전화해서 직접 묻는 것입니다.";
+    why.textContent = '물어볼 문장 하나: "요즘 몸 때문에 못 하시는 거 있으세요?" — 이 답이 곧 분류입니다.';
+  } else {
+    // 1순위: 다회 결제 수, 동률이면 인원수, 그다음 연락 가능 수
+    const cand = ["A","B","C"].map(k => ({ k, ...t[k] }))
+      .sort((x,y) => y.repeat - x.repeat || y.n - x.n || y.reach - x.reach);
+    const top = cand[0], second = cand[1];
+    div.className = "verdict";
+
+    if(top.n === 0){
+      div.className = "verdict thin";
+      h.textContent = "A·B·C 어디에도 사람이 없습니다";
+      p.textContent = "기타가 " + t.X.n + "명입니다. 과거 고객이 세 후보 어디에도 안 모여 있다면, "
+        + "세 후보 자체가 틀렸을 수 있습니다. 기타로 분류된 분들의 공통점을 찾아보세요.";
+      why.textContent = "전략서의 A/B/C는 가정이었습니다. 실제 고객이 가정을 이깁니다.";
+    } else {
+      h.textContent = "지금 데이터 기준 1순위 — " + SEGNAME[top.k];
+      p.innerHTML = "<b>" + top.n + "명</b> 중 다회 결제 <b>" + top.repeat + "명</b>, 연락 가능 <b>" + top.reach + "명</b>."
+        + (second && second.repeat === top.repeat && second.n === top.n
+            ? " <b>단, " + SEGNAME[second.k] + "와 동률입니다 — 아래 why를 보세요.</b>" : "");
+      const tie = second && second.repeat === top.repeat && second.n === top.n;
+      why.textContent = tie
+        ? "동률일 때는 숫자로 못 정합니다. 둘 중 소장님이 더 말이 잘 통했던 쪽, 혹은 다음 1년 동안 더 보고 싶은 쪽으로 고르세요. 그것도 정당한 근거입니다."
+        : "인원수가 아니라 다회 결제 수로 정렬했습니다. 누가 왔는가보다 누가 돈을 냈는가가 첫 30일에 중요합니다."
+          + (top.reach === 0 ? " ⚠️ 다만 이 세그먼트에 연락 가능한 사람이 0명입니다 — 1순위로 잡아도 당장 전화할 상대가 없습니다." : "");
+    }
+  }
+  div.append(h, p, why); el.appendChild(div);
+}
+
+function callList(){
+  const ol = document.getElementById("calls");
+  ol.textContent = "";
+  const list = rows
+    .filter(r => r.call === "가능" && (r.name || r.memo))
+    .sort((a,b) => (PAYRANK[b.pay]||0) - (PAYRANK[a.pay]||0));
+
+  if(!list.length){
+    const li = document.createElement("li");
+    li.style.gridTemplateColumns = "1fr";
+    li.className = "empty";
+    li.style.counterIncrement = "none";
+    li.textContent = "연락 가능 = '가능'인 사람이 아직 없습니다.";
+    ol.appendChild(li); return;
+  }
+  list.forEach(r => {
+    const li = document.createElement("li");
+    const mid = document.createElement("div");
+    const nm = document.createElement("b"); nm.textContent = r.name || "(이름 미기재)";
+    mid.appendChild(nm);
+    if(r.memo){ const m = document.createElement("div"); m.className = "memo"; m.textContent = r.memo; mid.appendChild(m); }
+    const tg = document.createElement("span");
+    const s = seg(r); tg.className = "tag " + s; tg.textContent = (s === "X" ? "기타" : s) + " · " + (r.pay || "모름");
+    li.append(mid, tg);
+    ol.appendChild(li);
+  });
+}
+
+function upd(){ save(); render(); tally(); callList(); }
+
+/* ── CSV ──────────────────────────────────────────── */
+function csvCell(v){ v = (v==null?"":String(v)); return /[",\n]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v; }
+document.getElementById("exp").addEventListener("click", () => {
+  const head = ["이름","연령대","직업","활동","결제","연락","메모","세그먼트"];
+  const lines = [head.join(",")].concat(rows.map(r =>
+    [r.name,r.age,r.job,r.act,r.pay,r.call,r.memo,seg(r)].map(csvCell).join(",")));
+  const blob = new Blob(["﻿" + lines.join("\n")], {type:"text/csv;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "오늘운동_고객분류_" + new Date().toISOString().slice(0,10) + ".csv";
+  a.click(); URL.revokeObjectURL(a.href);
+});
+document.getElementById("impBtn").addEventListener("click", () => document.getElementById("imp").click());
+document.getElementById("imp").addEventListener("change", e => {
+  const f = e.target.files[0]; if(!f) return;
+  const rd = new FileReader();
+  rd.onload = () => {
+    const lines = String(rd.result).replace(/^﻿/,"").split(/\r?\n/).filter(l => l.trim());
+    const out = [];
+    lines.slice(1).forEach(l => {
+      const c = []; let cur = "", q = false;
+      for(let i=0;i<l.length;i++){
+        const ch = l[i];
+        if(q){ if(ch === '"'){ if(l[i+1] === '"'){ cur += '"'; i++; } else q = false; } else cur += ch; }
+        else if(ch === '"') q = true;
+        else if(ch === ','){ c.push(cur); cur = ""; }
+        else cur += ch;
+      }
+      c.push(cur);
+      out.push({ name:c[0]||"", age:AGE.includes(c[1])?c[1]:"모름", job:JOB.includes(c[2])?c[2]:"모름",
+                 act:ACT.includes(c[3])?c[3]:"모름", pay:PAY.includes(c[4])?c[4]:"모름",
+                 call:CALL.includes(c[5])?c[5]:"모름", memo:c[6]||"" });
+    });
+    if(out.length){ rows = out; upd(); }
+    e.target.value = "";
+  };
+  rd.readAsText(f);
+});
+
+/* ── 버튼 ─────────────────────────────────────────── */
+function blank(){ return { name:"", age:"모름", job:"모름", act:"모름", pay:"모름", call:"모름", memo:"" }; }
+document.getElementById("addRow").addEventListener("click", () => {
+  rows.push(blank()); upd();
+  const ins = document.querySelectorAll("#tb tr input");
+  if(ins.length) ins[ins.length - 2].focus();
+});
+document.getElementById("add5").addEventListener("click", () => { for(let i=0;i<5;i++) rows.push(blank()); upd(); });
+document.getElementById("clear").addEventListener("click", () => {
+  if(rows.length && !confirm("입력한 " + rows.length + "행을 전부 지웁니다. 계속할까요?")) return;
+  rows = []; upd();
+});
+
+load();
+if(!rows.length) for(let i=0;i<5;i++) rows.push(blank());
+upd();
+</script>
+</body>
+</html>
